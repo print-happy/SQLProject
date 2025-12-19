@@ -240,3 +240,21 @@ FROM parcels;
 INSERT INTO admins (username, password_hash) VALUES ('admin', 'secret');
 INSERT INTO couriers (name, code) VALUES ('顺丰', 'SF'), ('京东', 'JD'), ('邮政', 'EMS');
 INSERT INTO shelves (zone, code, capacity) VALUES ('A', 'A-01', 5), ('A', 'A-02', 5);
+
+-- ============================================================
+-- 7. 权限配置 (确保应用用户有完整权限)
+-- ============================================================
+
+-- 授予序列权限 (解决 users_id_seq 等权限问题)
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO campus_user;
+
+-- 授予表的所有权限
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO campus_user;
+
+-- 授予函数/存储过程执行权限
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO campus_user;
+
+-- 设置默认权限 (未来创建的对象自动有权限)
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO campus_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO campus_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO campus_user;

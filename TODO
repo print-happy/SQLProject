@@ -3,3 +3,29 @@ TODO：
 首先，手机号查询虽然已经实现，但是还有问题
 第二，包裹入库时也有问题，有入库不成功和显示入库成功但是数据库查询不到的情况，可能与Go语言某种性质相关，需要排查
 修复以上问题后下一步任务是根据不同用户在后端也设计权限。
+
+Update:
+1、目前看来包裹可以成功实现入库，入库以后会有反馈，同时可以通过手机号实现对于这个包裹的查询，同时在先前的代码中也实现了关于重复入库等的问题；
+2、主要解决问题的方法体现在在init_full_schema.sql最后添加上了postgres授予campus_user用户权限，同时go代码进行了微调，主要修改了repository/parcel_repo.go，修改区域如下
+```sql
+func GetParcelByPhone(phone string) ([]model.ParcelViewStudent, error) {
+    parcels := []model.ParcelViewStudent{}
+    query := `
+        SELECT 
+            p.tracking_number, 
+            c.name AS courier_name, 
+            p.pickup_code, 
+            s.zone AS shelf_zone, 
+            p.status, 
+            p.updated_at 
+        FROM parcels p
+        LEFT JOIN couriers c ON p.courier_id = c.id
+        LEFT JOIN shelves s ON p.shelf_id = s.id
+        LEFT JOIN users u ON p.user_id = u.id  -- 新增：关联用户表
+        WHERE u.phone = $1  -- 修改：通过users表的phone字段查询
+        ORDER BY p.updated_at DESC
+    `
+    err := DB.Select(&parcels, query, phone)
+    return parcels, err
+}
+```

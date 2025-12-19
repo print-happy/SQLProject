@@ -4,10 +4,10 @@ server:
 
 database:
   host: "localhost"
-  port: "5433"
+  port: "5432"
   user: "campus_user"
-  password: "campus_pass"
-  dbname: "campus_logistics"
+  password: "campus_114514"
+  dbname: "campus_delivery"
   sslmode: "disable"
   max_idle_conns: 10
   max_open_conns: 100

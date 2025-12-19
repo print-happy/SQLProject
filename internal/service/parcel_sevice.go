@@ -1,31 +1,86 @@
+// 包声明：service 包负责业务逻辑层（Business Logic Layer）
+// 主要职责：处理业务规则、验证输入、协调数据访问和返回业务结果
+// 作为handler层和repository层之间的桥梁，确保业务逻辑的独立性
 package service
 
+// 导入所需的包
 import (
-	"campus-logistics/internal/repository"
-	"campus-logistics/internal/model"
+    "campus-logistics/internal/repository" // 数据访问层
+    "campus-logistics/internal/model"      // 数据模型
 )
 
-type InbounceRequest struct {
-    TrackingNumber string `json:"tracking_number" binding:"required"` // 必填
-	Phone          string `json:"phone" binding:"required"`           // 必填
-	CourierCode    string `json:"courier_code" binding:"required"`    // 必填 (如 SF, YT)
-	UserName       string `json:"user_name"`	
+// InboundRequest 入库请求结构体
+// 定义接收入库请求时需要的数据格式
+// 结构体标签说明：
+//   - json: 指定JSON序列化/反序列化时的字段名
+//   - binding: Gin框架的验证标签，用于请求参数验证
+type InboundRequest struct {
+    // 运单号/快递单号，入库包裹的唯一标识符
+    // binding:"required" 表示该字段为必填项，如果请求中缺失，Gin会返回验证错误
+    TrackingNumber string `json:"tracking_number" binding:"required"`
+    
+    // 收件人手机号，用于关联用户信息
+    // 必填项，确保每个包裹都有对应的收件人
+    Phone string `json:"phone" binding:"required"`
+    
+    // 快递公司代码，用于标识快递公司
+    // 例如：SF（顺丰）、YT（圆通）、ZT（中通）
+    // 必填项，确保包裹有明确的快递公司归属
+    CourierCode string `json:"courier_code" binding:"required"`
+    
+    // 操作员名称，执行入库操作的人员名称
+    // 非必填项（没有binding:"required"标签），可以为空
+    // 用于记录操作日志和责任追踪
+    UserName string `json:"user_name"`
 }
 
-
-func Inbounce(req InbounceRequest) error {
-	return repository.CreateParcelInbound(req.TrackingNumber, req.Phone, req.CourierCode, req.UserName)
+// Inbound 包裹入库服务函数
+// 功能：处理包裹入库的核心业务逻辑，协调相关操作
+// 参数：req - InboundRequest结构体，包含入库所需的所有信息
+// 返回值：error - 成功返回nil，失败返回具体错误
+func Inbound(req InboundRequest) error {
+    // 调用repository层的CreateParcelInbound函数执行入库操作
+    // 将业务逻辑层的数据传递到数据访问层
+    // 错误会直接向上传递，由调用者（handler层）处理
+    return repository.CreateParcelInbound(
+        req.TrackingNumber,  // 运单号
+        req.Phone,           // 手机号
+        req.CourierCode,     // 快递公司代码
+        req.UserName,        // 操作员名称（可能为空）
+    )
 }
 
+// PickupRequest 取件请求结构体
+// 定义接收取件请求时需要的数据格式
 type PickupRequest struct {
-	TrackingNumber string `json:"tracking_number" binding:"required"`
-	PickupCode     string `json:"pickup_code" binding:"required"`
+    // 运单号，取件时用于定位具体包裹
+    TrackingNumber string `json:"tracking_number" binding:"required"`
+    
+    // 取件码，取件时用于验证用户身份的凭证
+    PickupCode string `json:"pickup_code" binding:"required"`
 }
 
-func Pickup(req PickupRequest) error{
-	return repository.PickupParcel(req.TrackingNumber, req.PickupCode)
+// Pickup 包裹取件服务函数
+// 功能：处理包裹取件的核心业务逻辑
+// 参数：req - PickupRequest结构体，包含取件所需的所有信息
+// 返回值：error - 成功返回nil，失败返回具体错误
+func Pickup(req PickupRequest) error {
+    // 调用repository层的PickupParcel函数执行取件操作
+    // 传递运单号和取件码，由数据访问层执行具体的数据库更新
+    return repository.PickupParcel(
+        req.TrackingNumber,  // 运单号
+        req.PickupCode,      // 取件码
+    )
 }
 
-func GetMyParcels(phone string)([]model.ParcelViewStudent, error){
+// GetMyParcels 查询我的包裹服务函数
+// 功能：根据手机号查询用户的所有包裹信息
+// 参数：phone - 用户手机号，作为查询条件
+// 返回值：
+//   - []model.ParcelViewStudent: 包裹视图列表，包含学生视角的包裹信息
+//   - error: 查询失败时返回错误，成功返回nil
+func GetMyParcels(phone string) ([]model.ParcelViewStudent, error) {
+    // 直接调用repository层的GetParcelByPhone函数
+    // 该函数执行多表关联查询，返回学生视角的包裹信息
     return repository.GetParcelByPhone(phone)
 }

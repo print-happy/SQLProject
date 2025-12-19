@@ -23,3 +23,29 @@ func GetParcelByTracking(trackingNum string)(*model.Parcel, error) {
 	}
 	return &p, nil
 }
+
+func PickupParcel(trackingNum, pickupCode string) error{
+	//使用源自更新语句，避免并发冲突
+	query := `UPDATE parcels
+	          SET status = 'picked_up', updated_at=NOW()
+			  WHERE tracking_number=$1
+			  AND pickup_code=$2
+			  AND status='stored'
+			  `
+	
+	result, err:=DB.Exec(query, trackingNum, pickupCode)
+	if err!=nil {
+	return fmt.Errorf("db execution failed:%w",err)
+	}
+
+	rowsAffected, err :=result.RowsAffected()
+	if err!=nil{
+		return err
+	}
+
+	if rowsAffected==0{
+		return fmt.Errorf("Pickup failed: invalid code or parcel status")
+	}
+
+	return nil
+}

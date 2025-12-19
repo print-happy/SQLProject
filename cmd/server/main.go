@@ -28,6 +28,7 @@ func main() {
 	v1 := r.Group("/api/v1")
     {
 		v1.POST("/inbound", handler.InboundHandler)
+		v1.POST("/pickup",handler.PickupHandler)
 	}
 	
 	r.GET("/ping",func(c *gin.Context) {

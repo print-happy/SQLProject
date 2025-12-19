@@ -29,6 +29,7 @@ func main() {
     {
 		v1.POST("/inbound", handler.InboundHandler)
 		v1.POST("/pickup",handler.PickupHandler)
+		v1.GET("/parcels", handler.GetMyParcelHandler)
 	}
 	
 	r.GET("/ping",func(c *gin.Context) {

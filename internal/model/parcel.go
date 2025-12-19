@@ -26,3 +26,12 @@ type Courier struct {
 	Phone     string    `db:"phone" json:"phone"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
+
+type ParcelViewStudent struct {
+	TrackingNumber string    `db:"tracking_number" json:"tracking_number"`
+	CourierName    string    `db:"courier_name" json:"courier_name"`
+	PickupCode     string    `db:"pickup_code" json:"pickup_code"`
+	ShelfZone      string    `db:"shelf_zone" json:"shelf_zone"`
+	Status         string    `db:"status" json:"status"`
+	UpdatedAt      time.Time `db:"updated_at" json:"updated_at"`
+}

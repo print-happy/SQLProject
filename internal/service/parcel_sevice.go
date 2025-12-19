@@ -2,6 +2,7 @@ package service
 
 import (
 	"campus-logistics/internal/repository"
+	"campus-logistics/internal/model"
 )
 
 type InbounceRequest struct {
@@ -23,4 +24,8 @@ type PickupRequest struct {
 
 func Pickup(req PickupRequest) error{
 	return repository.PickupParcel(req.TrackingNumber, req.PickupCode)
+}
+
+func GetMyParcels(phone string)([]model.ParcelViewStudent, error){
+    return repository.GetParcelByPhone(phone)
 }

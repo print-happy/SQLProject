@@ -2,6 +2,7 @@ package handler
 
 import (
 	"campus-logistics/internal/service"
+	"campus-logistics/internal/model"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -44,5 +45,29 @@ func PickupHandler(c *gin.Context) {
 			"status":"picked_up",
 			"action":"completed",
 		},
+	})
+}
+
+func GetMyParcelHandler(c *gin.Context){
+	phone:=c.Query("phone")
+
+	if phone==""{
+		c.JSON(http.StatusBadRequest, gin.H{"error": "phone parameter is required"})
+		return
+	}
+
+	parcels, err := service.GetMyParcels(phone)
+	if err!= nil{
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "查询失败"})
+		return
+	}
+
+	if parcels==nil{
+		parcels=[]model.ParcelViewStudent{}
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success",
+		"data":    parcels,
+		"count":   len(parcels),
 	})
 }

@@ -1,0 +1,13 @@
+server:
+  port: "8080"
+  mode: "debug"
+
+database:
+  host: "localhost"
+  port: "5433"
+  user: "campus_user"
+  password: "campus_pass"
+  dbname: "campus_logistics"
+  sslmode: "disable"
+  max_idle_conns: 10
+  max_open_conns: 100

@@ -4,10 +4,14 @@ server:
 
 database:
   host: "localhost"
-  port: "5432"
+  port: "5433"
   user: "campus_user"
-  password: "campus_114514"
-  dbname: "campus_delivery"
+  password: "campus_pass"
+  dbname: "campus_logistics"
   sslmode: "disable"
   max_idle_conns: 10
   max_open_conns: 100
+
+jwt:
+  # Development only. Prefer setting env JWT_SECRET in production.
+  secret: "dev_secret_change_me"

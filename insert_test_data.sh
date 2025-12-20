@@ -1,6 +1,30 @@
 #!/bin/bash
 
-echo "=== 插入测试数据 ==="
+echo "=== 插入基础测试数据（入库功能） ==="
+
+BASE_URL=${BASE_URL:-"http://localhost:8080"}
+
+get_token() {
+  # Prefer stdin (pipe), fallback to first argument.
+  if [ -n "${1:-}" ]; then
+    printf '%s' "$1"
+  else
+    cat
+  fi | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("data",{}).get("access_token",""))'
+}
+
+login_courier() {
+  local code=$1
+  local resp
+  resp=$(curl -s -X POST "$BASE_URL/api/v1/auth/courier/login" -H "Content-Type: application/json" -d "{\"courier_code\":\"$code\"}")
+  local tok
+  tok=$(printf '%s' "$resp" | get_token)
+  if [ -z "$tok" ]; then
+    echo "failed to login courier $code: $resp" >&2
+    return 1
+  fi
+  echo "$tok"
+}
 
 # 定义颜色
 RED='\033[0;31m'
@@ -16,83 +40,82 @@ PHONE3="13700137000"
 
 echo "1. 为手机号 $PHONE1 插入3个包裹..."
 
-# 包裹1
-curl -s -X POST http://localhost:8080/api/v1/inbound \
+TOKEN_SF=$(login_courier "SF") || exit 1
+TOKEN_JD=$(login_courier "JD") || exit 1
+TOKEN_EMS=$(login_courier "EMS") || exit 1
+
+echo "  -> 包裹1: SF10001"
+curl -s -X POST "$BASE_URL/api/v1/inbound" \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN_SF" \
   -d "{
     \"tracking_number\": \"SF10001\",
     \"phone\": \"$PHONE1\",
-    \"courier_code\": \"SF\",
     \"user_name\": \"张三\"
-  }" | grep -o "success\|error"
-echo "  包裹1: SF10001"
+  }" | grep -o "success\\|error" || echo " error"
 
-sleep 1
+sleep 0.5
 
-# 包裹2
-curl -s -X POST http://localhost:8080/api/v1/inbound \
+echo "  -> 包裹2: JD20001"
+curl -s -X POST "$BASE_URL/api/v1/inbound" \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN_JD" \
   -d "{
     \"tracking_number\": \"JD20001\",
     \"phone\": \"$PHONE1\",
-    \"courier_code\": \"JD\",
     \"user_name\": \"张三\"
-  }" | grep -o "success\|error"
-echo "  包裹2: JD20001"
+  }" | grep -o "success\\|error" || echo " error"
 
-sleep 1
+sleep 0.5
 
-# 包裹3
-curl -s -X POST http://localhost:8080/api/v1/inbound \
+echo "  -> 包裹3: EMS30001"
+curl -s -X POST "$BASE_URL/api/v1/inbound" \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN_EMS" \
   -d "{
     \"tracking_number\": \"EMS30001\",
     \"phone\": \"$PHONE1\",
-    \"courier_code\": \"EMS\",
     \"user_name\": \"张三\"
-  }" | grep -o "success\|error"
-echo "  包裹3: EMS30001"
+  }" | grep -o "success\\|error" || echo " error"
 
 echo ""
 echo "2. 为手机号 $PHONE2 插入2个包裹..."
 
-# 包裹1
-curl -s -X POST http://localhost:8080/api/v1/inbound \
+echo "  -> 包裹1: SF10002"
+curl -s -X POST "$BASE_URL/api/v1/inbound" \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN_SF" \
   -d "{
     \"tracking_number\": \"SF10002\",
     \"phone\": \"$PHONE2\",
-    \"courier_code\": \"SF\",
     \"user_name\": \"李四\"
-  }" | grep -o "success\|error"
-echo "  包裹1: SF10002"
+  }" | grep -o "success\\|error" || echo " error"
 
-sleep 1
+sleep 0.5
 
-# 包裹2
-curl -s -X POST http://localhost:8080/api/v1/inbound \
+echo "  -> 包裹2: JD20002"
+curl -s -X POST "$BASE_URL/api/v1/inbound" \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN_JD" \
   -d "{
     \"tracking_number\": \"JD20002\",
     \"phone\": \"$PHONE2\",
-    \"courier_code\": \"JD\",
     \"user_name\": \"李四\"
-  }" | grep -o "success\|error"
-echo "  包裹2: JD20002"
+  }" | grep -o "success\\|error" || echo " error"
 
 echo ""
 echo "3. 为手机号 $PHONE3 插入1个包裹..."
 
-curl -s -X POST http://localhost:8080/api/v1/inbound \
+echo "  -> 包裹: EMS30002"
+curl -s -X POST "$BASE_URL/api/v1/inbound" \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN_EMS" \
   -d "{
     \"tracking_number\": \"EMS30002\",
     \"phone\": \"$PHONE3\",
-    \"courier_code\": \"EMS\",
     \"user_name\": \"王五\"
-  }" | grep -o "success\|error"
-echo "  包裹: EMS30002"
+  }" | grep -o "success\\|error" || echo " error"
 
 echo ""
-echo "=== 数据插入完成 ==="
+echo -e "${GREEN}=== 入库测试数据插入完成 ===${NC}"
 echo ""

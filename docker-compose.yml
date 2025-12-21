@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # Database Service
+  postgres:
+    image: postgres:15-alpine
+    container_name: campus_db
+    environment:
+      POSTGRES_USER: campus_user
+      POSTGRES_PASSWORD: campus_pass
+      POSTGRES_DB: campus_logistics
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init_full_schema.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - campus-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U campus_user -d campus_logistics"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Backend Service
+  backend:
+    build:
+      context: .
+      dockerfile: deployment/backend.Dockerfile
+    container_name: campus_backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    volumes:
+      - ./configs/config.docker.yaml:/app/configs/config.yaml
+    networks:
+      - campus-net
+    expose:
+      - "8080"
+
+  # Frontend Service (Nginx)
+  frontend:
+    build:
+      context: .
+      dockerfile: deployment/frontend.Dockerfile
+    container_name: campus_frontend
+    depends_on:
+      - backend
+    ports:
+      - "443:443"
+    volumes:
+      - ./deployment/certs:/etc/nginx/certs:ro
+    networks:
+      - campus-net
+
+networks:
+  campus-net:
+    driver: bridge
+
+volumes:
+  pgdata:

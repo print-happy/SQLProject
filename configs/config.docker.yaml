@@ -1,0 +1,16 @@
+server:
+  port: "8080"
+  mode: "release"
+
+database:
+  host: "postgres"  # Docker service name
+  port: "5432"      # Internal Docker port
+  user: "campus_user"
+  password: "campus_pass"
+  dbname: "campus_logistics"
+  sslmode: "disable"
+  max_idle_conns: 10
+  max_open_conns: 100
+
+jwt:
+  secret: "dev_secret_change_me"

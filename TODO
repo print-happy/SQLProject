@@ -32,5 +32,5 @@ func GetParcelByPhone(phone string) ([]model.ParcelViewStudent, error) {
 
 Update:
 已经使用JWT生成了后端权限，并且添加了React前端，并且使用nginx进行反代，只暴露443端口
-接下来需要完善管理员功能，以及添加测试数据对系统进行测试，特别是需要压力测试
-此外，后面需要在.gitignore中加入configs/config.yaml，防止相互干扰
+接下来需要添加测试数据对系统进行测试，特别是需要压力测试
+查看docs文件夹

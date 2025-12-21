@@ -8,11 +8,16 @@ import (
 	"log"                                  // Go标准日志库，用于记录程序运行状态
 
 	"github.com/gin-gonic/gin" // Gin Web框架，用于构建HTTP API服务器
-	"github.com/spf13/viper"   // Viper配置管理库，用于读取配置文件
+	"github.com/joho/godotenv"
+	"github.com/spf13/viper" // Viper配置管理库，用于读取配置文件
 )
 
 // main 函数是程序的入口点，程序从此处开始执行
 func main() {
+	// Load environment variables from .env if present.
+	// .env is ignored by git; in production prefer real environment variables.
+	_ = godotenv.Load()
+
 	// ==================== 配置初始化部分 ====================
 	// 设置Viper配置文件的名称（不含扩展名）
 	viper.SetConfigName("config")

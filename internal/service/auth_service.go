@@ -3,6 +3,7 @@ package service
 import (
 	"crypto/subtle"
 	"errors"
+	"os"
 	"strings"
 	"time"
 
@@ -28,6 +29,38 @@ func AdminLogin(username, password string) (*TokenResponse, error) {
 	username = strings.TrimSpace(username)
 	if username == "" || password == "" {
 		return nil, ErrInvalidCredentials
+	}
+
+	// Preferred: admin credentials provided via environment variables.
+	// Supports plain text or bcrypt hash in ADMIN_PASSWORD.
+	// If ADMIN_USERNAME is set, we require ADMIN_PASSWORD as well.
+	if envUser := strings.TrimSpace(os.Getenv("ADMIN_USERNAME")); envUser != "" {
+		envPass := strings.TrimSpace(os.Getenv("ADMIN_PASSWORD"))
+		if envPass == "" {
+			return nil, ErrInvalidCredentials
+		}
+		if subtle.ConstantTimeCompare([]byte(envUser), []byte(username)) != 1 {
+			return nil, ErrInvalidCredentials
+		}
+		if !verifyPassword(envPass, password) {
+			return nil, ErrInvalidCredentials
+		}
+
+		tok, err := middleware.IssueToken(middleware.Claims{
+			Role:     middleware.RoleAdmin,
+			AdminID:  0,
+			Username: envUser,
+		}, defaultTokenTTL)
+		if err != nil {
+			return nil, err
+		}
+
+		return &TokenResponse{
+			AccessToken: tok,
+			TokenType:   "Bearer",
+			ExpiresIn:   int64(defaultTokenTTL.Seconds()),
+			Role:        string(middleware.RoleAdmin),
+		}, nil
 	}
 
 	a, err := repository.GetAdminByUsername(username)

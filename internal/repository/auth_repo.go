@@ -3,11 +3,8 @@ package repository
 import (
 	"campus-logistics/internal/model"
 	"database/sql"
-	"errors"
 	"fmt"
 )
-
-var ErrNotFound = errors.New("not found")
 
 func GetAdminByUsername(username string) (*model.Admin, error) {
 	var a model.Admin

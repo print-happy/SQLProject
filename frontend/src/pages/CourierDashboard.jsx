@@ -88,9 +88,7 @@ export const CourierDashboard = () => {
   // Inbound Form State
   const [trackingNumber, setTrackingNumber] = useState('');
   const [phone, setPhone] = useState('');
-  const [shelfZone, setShelfZone] = useState('');
-  const [shelfRow, setShelfRow] = useState('');
-  const [shelfUnit, setShelfUnit] = useState('');
+  const [studentName, setStudentName] = useState('');
   const [inboundLoading, setInboundLoading] = useState(false);
 
   useEffect(() => {
@@ -118,7 +116,7 @@ export const CourierDashboard = () => {
   };
 
   const handleInbound = async () => {
-    if (!trackingNumber || !phone || !shelfZone || !shelfRow || !shelfUnit) {
+    if (!trackingNumber || !phone) {
       notify('Error', 'Please fill in all fields', 'error');
       return;
     }
@@ -129,9 +127,7 @@ export const CourierDashboard = () => {
       await axios.post('/api/v1/inbound', {
         tracking_number: trackingNumber,
         phone: phone,
-        shelf_zone: shelfZone,
-        shelf_row: parseInt(shelfRow),
-        shelf_unit: parseInt(shelfUnit),
+        user_name: studentName,
       }, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -141,9 +137,7 @@ export const CourierDashboard = () => {
       // Reset form
       setTrackingNumber('');
       setPhone('');
-      setShelfZone('');
-      setShelfRow('');
-      setShelfUnit('');
+      setStudentName('');
     } catch (error) {
       console.error(error);
       notify('Error', error.response?.data?.error || 'Inbound failed', 'error');
@@ -197,19 +191,9 @@ export const CourierDashboard = () => {
                 <Label htmlFor="phone">Student Phone</Label>
                 <Input id="phone" value={phone} onChange={(e, d) => setPhone(d.value)} placeholder="e.g. 13800138000" />
               </div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <div className={styles.inputGroup} style={{ flex: 1 }}>
-                  <Label htmlFor="zone">Zone</Label>
-                  <Input id="zone" value={shelfZone} onChange={(e, d) => setShelfZone(d.value)} placeholder="A" />
-                </div>
-                <div className={styles.inputGroup} style={{ flex: 1 }}>
-                  <Label htmlFor="row">Row</Label>
-                  <Input id="row" type="number" value={shelfRow} onChange={(e, d) => setShelfRow(d.value)} placeholder="1" />
-                </div>
-                <div className={styles.inputGroup} style={{ flex: 1 }}>
-                  <Label htmlFor="unit">Unit</Label>
-                  <Input id="unit" type="number" value={shelfUnit} onChange={(e, d) => setShelfUnit(d.value)} placeholder="1" />
-                </div>
+              <div className={styles.inputGroup}>
+                <Label htmlFor="name">Student Name (optional)</Label>
+                <Input id="name" value={studentName} onChange={(e, d) => setStudentName(d.value)} placeholder="e.g. 张三" />
               </div>
               <Button 
                 appearance="primary" 
@@ -231,7 +215,6 @@ export const CourierDashboard = () => {
                 <TableRow>
                   <TableHeaderCell>Tracking Number</TableHeaderCell>
                   <TableHeaderCell>Student Phone</TableHeaderCell>
-                  <TableHeaderCell>Location</TableHeaderCell>
                   <TableHeaderCell>Status</TableHeaderCell>
                   <TableHeaderCell>Time</TableHeaderCell>
                 </TableRow>
@@ -245,8 +228,7 @@ export const CourierDashboard = () => {
                   tasks.map((task) => (
                     <TableRow key={task.tracking_number}>
                       <TableCell>{task.tracking_number}</TableCell>
-                      <TableCell>{task.student_phone || '-'}</TableCell>
-                      <TableCell>{`${task.shelf_zone}-${task.shelf_row}-${task.shelf_unit}`}</TableCell>
+                      <TableCell>{task.phone || '-'}</TableCell>
                       <TableCell>
                         <Badge appearance="tint">{task.status}</Badge>
                       </TableCell>

@@ -25,8 +25,9 @@ type InboundRequest struct {
 
 	// 快递公司代码，用于标识快递公司
 	// 例如：SF（顺丰）、YT（圆通）、ZT（中通）
-	// 必填项，确保包裹有明确的快递公司归属
-	CourierCode string `json:"courier_code" binding:"required"`
+	// 对于快递员入库接口：courier_code 由 JWT claims 决定，客户端不应提交
+	// 对于兼容旧调用方式：仍允许从请求体中读取该字段
+	CourierCode string `json:"courier_code"`
 
 	// 操作员名称，执行入库操作的人员名称
 	// 非必填项（没有binding:"required"标签），可以为空

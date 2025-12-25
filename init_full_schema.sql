@@ -74,7 +74,7 @@ CREATE TABLE parcels (
     -- 关系关联
     user_id BIGINT NOT NULL REFERENCES users(id),
     courier_id INT NOT NULL REFERENCES couriers(id),
-    shelf_id INT REFERENCES shelves(id),
+    shelf_id INT REFERENCES shelves(id) ON DELETE SET NULL,
     
     -- 核心业务字段
     pickup_code VARCHAR(20),              -- 取件码
@@ -239,7 +239,6 @@ FROM parcels;
 -- ============================================================
 INSERT INTO admins (username, password_hash) VALUES ('admin', 'secret');
 INSERT INTO couriers (name, code) VALUES ('顺丰', 'SF'), ('京东', 'JD'), ('邮政', 'EMS');
-INSERT INTO shelves (zone, code, capacity) VALUES ('A', 'A-01', 5), ('A', 'A-02', 5);
 
 -- ============================================================
 -- 7. 权限配置 (确保应用用户有完整权限)

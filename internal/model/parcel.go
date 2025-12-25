@@ -63,7 +63,7 @@ type Courier struct {
 	Code string `db:"code" json:"code"`
 
 	// 快递公司联系电话，用于联系快递公司
-	Phone string `db:"phone" json:"phone"`
+	ContactPhone string `db:"contact_phone" json:"contact_phone"`
 
 	// 创建时间，记录快递公司信息创建的时间戳
 	CreatedAt time.Time `db:"created_at" json:"created_at"`

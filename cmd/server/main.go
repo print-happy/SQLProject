@@ -84,6 +84,16 @@ func main() {
 		admin.GET("/parcels/retention", handler.GetRetentionParcelsHandler)
 		// 包裹状态更新（待取、异常、退回等）
 		admin.POST("/parcels/:tracking_number/status", handler.UpdateParcelStatusHandler)
+
+		// 快递公司管理
+		admin.GET("/couriers", handler.ListCouriersHandler)
+		admin.POST("/couriers", handler.CreateCourierHandler)
+		admin.DELETE("/couriers/:code", handler.DeleteCourierHandler)
+
+		// 货架管理
+		admin.GET("/shelves", handler.ListShelvesHandler)
+		admin.POST("/shelves", handler.CreateShelfHandler)
+		admin.DELETE("/shelves/:code", handler.DeleteShelfHandler)
 	}
 
 	// 定义健康检查端点：GET /ping

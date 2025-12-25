@@ -30,6 +30,7 @@ import {
   DialogContent,
   Select,
   Label,
+  Input,
 } from '@fluentui/react-components';
 import {
   SignOutRegular,
@@ -89,6 +90,20 @@ export const AdminDashboard = () => {
   const [retentionParcels, setRetentionParcels] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Courier management
+  const [couriers, setCouriers] = useState([]);
+  const [courierName, setCourierName] = useState('');
+  const [courierCode, setCourierCode] = useState('');
+  const [courierPhone, setCourierPhone] = useState('');
+  const [courierLoading, setCourierLoading] = useState(false);
+
+  // Shelf management
+  const [shelves, setShelves] = useState([]);
+  const [shelfZone, setShelfZone] = useState('');
+  const [shelfCode, setShelfCode] = useState('');
+  const [shelfCapacity, setShelfCapacity] = useState('');
+  const [shelfLoading, setShelfLoading] = useState(false);
+
   // Status Update Dialog
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [selectedParcel, setSelectedParcel] = useState(null);
@@ -99,6 +114,10 @@ export const AdminDashboard = () => {
       fetchStats();
     } else if (selectedTab === 'retention') {
       fetchRetention();
+    } else if (selectedTab === 'couriers') {
+      fetchCouriers();
+    } else if (selectedTab === 'shelves') {
+      fetchShelves();
     }
   }, [selectedTab]);
 
@@ -127,6 +146,131 @@ export const AdminDashboard = () => {
       console.error('Failed to fetch retention parcels', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCouriers = async () => {
+    setCourierLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('/api/v1/admin/couriers', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCouriers(response.data.data || []);
+    } catch (error) {
+      console.error('Failed to fetch couriers', error);
+      if (error.response && error.response.status === 401) navigate('/login');
+      else alert(error.response?.data?.error || 'Failed to fetch couriers');
+    } finally {
+      setCourierLoading(false);
+    }
+  };
+
+  const handleCreateCourier = async () => {
+    if (!courierName.trim() || !courierCode.trim()) {
+      alert('Courier name and code are required');
+      return;
+    }
+    setCourierLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post('/api/v1/admin/couriers', {
+        name: courierName.trim(),
+        code: courierCode.trim(),
+        contact_phone: courierPhone.trim(),
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCourierName('');
+      setCourierCode('');
+      setCourierPhone('');
+      await fetchCouriers();
+    } catch (error) {
+      console.error('Failed to create courier', error);
+      alert(error.response?.data?.error || 'Failed to create courier');
+    } finally {
+      setCourierLoading(false);
+    }
+  };
+
+  const handleDeleteCourier = async (code) => {
+    if (!window.confirm(`Delete courier ${code}?`)) return;
+    setCourierLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/v1/admin/couriers/${encodeURIComponent(code)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      await fetchCouriers();
+    } catch (error) {
+      console.error('Failed to delete courier', error);
+      alert(error.response?.data?.error || 'Failed to delete courier');
+    } finally {
+      setCourierLoading(false);
+    }
+  };
+
+  const fetchShelves = async () => {
+    setShelfLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('/api/v1/admin/shelves', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setShelves(response.data.data || []);
+    } catch (error) {
+      console.error('Failed to fetch shelves', error);
+      if (error.response && error.response.status === 401) navigate('/login');
+      else alert(error.response?.data?.error || 'Failed to fetch shelves');
+    } finally {
+      setShelfLoading(false);
+    }
+  };
+
+  const handleCreateShelf = async () => {
+    const cap = parseInt(shelfCapacity, 10);
+    if (!shelfZone.trim() || !shelfCode.trim() || Number.isNaN(cap)) {
+      alert('Zone, code and capacity are required');
+      return;
+    }
+    setShelfLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post('/api/v1/admin/shelves', {
+        zone: shelfZone.trim(),
+        code: shelfCode.trim(),
+        capacity: cap,
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setShelfZone('');
+      setShelfCode('');
+      setShelfCapacity('');
+      await fetchShelves();
+      await fetchStats();
+    } catch (error) {
+      console.error('Failed to create shelf', error);
+      alert(error.response?.data?.error || 'Failed to create shelf');
+    } finally {
+      setShelfLoading(false);
+    }
+  };
+
+  const handleDeleteShelf = async (code) => {
+    if (!window.confirm(`Delete empty shelf ${code}?`)) return;
+    setShelfLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/v1/admin/shelves/${encodeURIComponent(code)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      await fetchShelves();
+      await fetchStats();
+    } catch (error) {
+      console.error('Failed to delete shelf', error);
+      alert(error.response?.data?.error || 'Failed to delete shelf');
+    } finally {
+      setShelfLoading(false);
     }
   };
 
@@ -173,6 +317,8 @@ export const AdminDashboard = () => {
         <TabList selectedValue={selectedTab} onTabSelect={(e, data) => setSelectedTab(data.value)}>
           <Tab value="dashboard">Overview</Tab>
           <Tab value="retention">Retention Management</Tab>
+          <Tab value="couriers">Couriers</Tab>
+          <Tab value="shelves">Shelves</Tab>
         </TabList>
 
         {selectedTab === 'dashboard' && (
@@ -236,6 +382,131 @@ export const AdminDashboard = () => {
                 )}
               </TableBody>
             </Table>
+          </Card>
+        )}
+
+        {selectedTab === 'couriers' && (
+          <Card className={styles.card}>
+            <Title3>Courier Companies</Title3>
+
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '12px' }}>
+              <div style={{ minWidth: 220 }}>
+                <Label>Name</Label>
+                <Input value={courierName} onChange={(e, d) => setCourierName(d.value)} placeholder="e.g. 顺丰" />
+              </div>
+              <div style={{ minWidth: 160 }}>
+                <Label>Code</Label>
+                <Input value={courierCode} onChange={(e, d) => setCourierCode(d.value)} placeholder="e.g. SF" />
+              </div>
+              <div style={{ minWidth: 220 }}>
+                <Label>Contact Phone (optional)</Label>
+                <Input value={courierPhone} onChange={(e, d) => setCourierPhone(d.value)} placeholder="e.g. 400-000-0000" />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'end' }}>
+                <Button appearance="primary" onClick={handleCreateCourier} disabled={courierLoading}>
+                  Add
+                </Button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '16px' }}>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHeaderCell>Name</TableHeaderCell>
+                    <TableHeaderCell>Code</TableHeaderCell>
+                    <TableHeaderCell>Contact</TableHeaderCell>
+                    <TableHeaderCell>Created</TableHeaderCell>
+                    <TableHeaderCell>Actions</TableHeaderCell>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {courierLoading ? (
+                    <TableRow><TableCell>Loading...</TableCell></TableRow>
+                  ) : couriers.length === 0 ? (
+                    <TableRow><TableCell>No couriers.</TableCell></TableRow>
+                  ) : (
+                    couriers.map((c) => (
+                      <TableRow key={c.code}>
+                        <TableCell>{c.name}</TableCell>
+                        <TableCell>{c.code}</TableCell>
+                        <TableCell>{c.contact_phone || '-'}</TableCell>
+                        <TableCell>{c.created_at ? new Date(c.created_at).toLocaleDateString() : '-'}</TableCell>
+                        <TableCell>
+                          <Button size="small" appearance="secondary" onClick={() => handleDeleteCourier(c.code)} disabled={courierLoading}>
+                            Delete
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </Card>
+        )}
+
+        {selectedTab === 'shelves' && (
+          <Card className={styles.card}>
+            <Title3>Shelves</Title3>
+            <Text>Only shelves created by admins can accept inbound parcels.</Text>
+
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '12px' }}>
+              <div style={{ minWidth: 160 }}>
+                <Label>Zone</Label>
+                <Input value={shelfZone} onChange={(e, d) => setShelfZone(d.value)} placeholder="e.g. A" />
+              </div>
+              <div style={{ minWidth: 200 }}>
+                <Label>Code</Label>
+                <Input value={shelfCode} onChange={(e, d) => setShelfCode(d.value)} placeholder="e.g. A-01" />
+              </div>
+              <div style={{ minWidth: 160 }}>
+                <Label>Capacity</Label>
+                <Input type="number" value={shelfCapacity} onChange={(e, d) => setShelfCapacity(d.value)} placeholder="e.g. 50" />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'end' }}>
+                <Button appearance="primary" onClick={handleCreateShelf} disabled={shelfLoading}>
+                  Add
+                </Button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '16px' }}>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHeaderCell>Zone</TableHeaderCell>
+                    <TableHeaderCell>Code</TableHeaderCell>
+                    <TableHeaderCell>Load</TableHeaderCell>
+                    <TableHeaderCell>Capacity</TableHeaderCell>
+                    <TableHeaderCell>Updated</TableHeaderCell>
+                    <TableHeaderCell>Actions</TableHeaderCell>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {shelfLoading ? (
+                    <TableRow><TableCell>Loading...</TableCell></TableRow>
+                  ) : shelves.length === 0 ? (
+                    <TableRow><TableCell>No shelves. Create one to enable inbound.</TableCell></TableRow>
+                  ) : (
+                    shelves.map((s) => (
+                      <TableRow key={s.code}>
+                        <TableCell>{s.zone}</TableCell>
+                        <TableCell>{s.code}</TableCell>
+                        <TableCell>{s.current_load}</TableCell>
+                        <TableCell>{s.capacity}</TableCell>
+                        <TableCell>{s.updated_at ? new Date(s.updated_at).toLocaleString() : '-'}</TableCell>
+                        <TableCell>
+                          <Button size="small" appearance="secondary" onClick={() => handleDeleteShelf(s.code)} disabled={shelfLoading}>
+                            Delete
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </Card>
         )}
       </main>

@@ -34,20 +34,53 @@ Campus Logistics 是一个基于 Go + Gin 的校园快递管理后端，配合 R
 - Docker Compose 会把 `.env` 注入后端容器。
 
 ## 快速开始（推荐：Docker Compose）
+### 情况 A：第一次使用（从未 compose 过）
 ```bash
-# 构建并后台启动（首次或代码更新后建议 --build）
+# 1) 准备 .env（按需修改 JWT_SECRET / ADMIN_USERNAME / ADMIN_PASSWORD）
+cp .env.example .env
+
+# 2) 准备 HTTPS 证书（如已存在可跳过）
+mkdir -p deployment/certs
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout deployment/certs/server.key \
+  -out deployment/certs/server.crt \
+  -subj "/C=CN/ST=Beijing/L=Beijing/O=CampusLogistics/OU=IT/CN=localhost"
+
+# 3) 构建并后台启动（首次必须 --build）
 sudo docker-compose up -d --build
 
-# 查看状态
+# 4) 查看状态 / 日志
 sudo docker-compose ps
-
-# 查看日志（全部 / 指定服务）
-sudo docker-compose logs -f
 sudo docker-compose logs -f backend
+```
 
-# 停止并清理容器
+### 情况 B：之前 compose 过，关闭后想重启
+根据你“关闭”的方式不同，使用不同命令：
+
+```bash
+# B1) 如果之前执行的是 docker-compose stop（容器还在，只是停了）
+sudo docker-compose start
+
+# B2) 如果之前执行的是 docker-compose down（容器被移除）
+sudo docker-compose up -d
+
+# 如果你改了代码/依赖/配置，重启时建议加 --build
+sudo docker-compose up -d --build
+
+# 查看状态 / 日志
+sudo docker-compose ps
+sudo docker-compose logs -f
+```
+
+### 停止与清理
+```bash
+# 停止但不删除容器（下次用 start 快速恢复）
+sudo docker-compose stop
+
+# 停止并删除容器（会释放 443 端口；下次用 up -d 重建）
 sudo docker-compose down
-# 如需连同数据库数据一起清理（慎用）
+
+# 彻底清空（包含数据库数据，慎用）
 sudo docker-compose down -v
 ```
 启动成功后，通过 `https://localhost` 访问前端（自签证书会有浏览器提醒，选择继续访问）。

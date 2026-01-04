@@ -180,6 +180,10 @@ export const Login = () => {
             {loading ? 'Logging in...' : 'Login'}
           </Button>
         </CardFooter>
+
+        <Button appearance="secondary" onClick={() => navigate('/shipping')} style={{ width: '100%' }}>
+          Send a Parcel
+        </Button>
       </Card>
     </div>
   );

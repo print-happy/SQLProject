@@ -5,6 +5,7 @@ import { Login } from './pages/Login';
 import { StudentDashboard } from './pages/StudentDashboard';
 import { CourierDashboard } from './pages/CourierDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { ShippingCalculator } from './pages/ShippingCalculator';
 import './App.css';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <Route path="/student/*" element={<StudentDashboard />} />
           <Route path="/courier/*" element={<CourierDashboard />} />
           <Route path="/admin/*" element={<AdminDashboard />} />
+          <Route path="/shipping" element={<ShippingCalculator />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>

@@ -90,6 +90,9 @@ type ParcelViewStudent struct {
 	// 包裹状态，学生需要知道的包裹当前状态
 	Status string `db:"status" json:"status"`
 
+	// 创建时间（入库时间参考）
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+
 	// 更新时间，包裹信息的最后更新时间
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }

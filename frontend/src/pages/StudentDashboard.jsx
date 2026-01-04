@@ -70,8 +70,19 @@ const useStyles = makeStyles({
 
 const statusMap = {
   stored: { color: 'brand', text: 'Ready for Pickup', icon: <ClockRegular /> },
+  pending: { color: 'warning', text: 'Pending', icon: <ClockRegular /> },
   picked_up: { color: 'success', text: 'Picked Up', icon: <CheckmarkCircleRegular /> },
   waiting: { color: 'warning', text: 'In Transit', icon: <BoxMultipleRegular /> },
+};
+
+const isExpired = (parcel) => {
+  const status = parcel?.status;
+  if (status !== 'stored' && status !== 'pending') return false;
+
+  const t = new Date(parcel?.created_at || parcel?.updated_at).getTime();
+  if (Number.isNaN(t)) return false;
+
+  return Date.now() - t > 3 * 24 * 60 * 60 * 1000;
 };
 
 export const StudentDashboard = () => {
@@ -192,13 +203,17 @@ export const StudentDashboard = () => {
                       <Text weight="bold" size={400}>{parcel.pickup_code || '-'}</Text>
                     </TableCell>
                     <TableCell>
-                      <Badge 
-                        appearance="tint" 
-                        color={statusMap[parcel.status]?.color || 'neutral'}
-                        icon={statusMap[parcel.status]?.icon}
-                      >
-                        {statusMap[parcel.status]?.text || parcel.status}
-                      </Badge>
+                      {isExpired(parcel) ? (
+                        <Badge appearance="filled" color="danger">Expired</Badge>
+                      ) : (
+                        <Badge 
+                          appearance="tint" 
+                          color={statusMap[parcel.status]?.color || 'neutral'}
+                          icon={statusMap[parcel.status]?.icon}
+                        >
+                          {statusMap[parcel.status]?.text || parcel.status}
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell>
                       {parcel.status === 'stored' && (

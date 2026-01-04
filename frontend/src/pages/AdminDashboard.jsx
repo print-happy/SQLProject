@@ -109,6 +109,14 @@ export const AdminDashboard = () => {
   const [selectedParcel, setSelectedParcel] = useState(null);
   const [newStatus, setNewStatus] = useState('stored');
 
+  const isExpired = (parcel) => {
+    const status = parcel?.status;
+    if (status !== 'stored' && status !== 'pending') return false;
+    const t = new Date(parcel?.created_at || parcel?.updated_at).getTime();
+    if (Number.isNaN(t)) return false;
+    return Date.now() - t > 3 * 24 * 60 * 60 * 1000;
+  };
+
   useEffect(() => {
     if (selectedTab === 'dashboard') {
       fetchStats();
@@ -369,7 +377,11 @@ export const AdminDashboard = () => {
                       <TableCell>{parcel.courier_name}</TableCell>
                       <TableCell>{parcel.shelf_zone}</TableCell>
                       <TableCell>
-                        <Badge appearance="tint" color="warning">{parcel.status}</Badge>
+                        {isExpired(parcel) ? (
+                          <Badge appearance="filled" color="danger">Expired</Badge>
+                        ) : (
+                          <Badge appearance="tint" color="warning">{parcel.status}</Badge>
+                        )}
                       </TableCell>
                       <TableCell>{new Date(parcel.updated_at).toLocaleDateString()}</TableCell>
                       <TableCell>

@@ -6,6 +6,7 @@ import (
 	"campus-logistics/internal/middleware"
 	"campus-logistics/internal/repository" // 项目内部的数据访问层包，负责数据库操作
 	"log"                                  // Go标准日志库，用于记录程序运行状态
+	"time"
 
 	"github.com/gin-gonic/gin" // Gin Web框架，用于构建HTTP API服务器
 	"github.com/joho/godotenv"
@@ -113,6 +114,25 @@ func main() {
 
 	// 在控制台输出服务器启动信息
 	log.Printf("Server starting on port %s... ", port)
+
+	// Background expiry marker: write EXPIRED audit logs for parcels older than 3 days.
+	// This does not change database schema or parcel status; it records an immutable event.
+	go func() {
+		// run once on boot
+		if n, err := repository.InsertExpiredAuditLogs(3); err != nil {
+			log.Printf("expiry job failed: %v", err)
+		} else if n > 0 {
+			log.Printf("expiry job inserted %d audit logs", n)
+		}
+
+		ticker := time.NewTicker(10 * time.Minute)
+		defer ticker.Stop()
+		for range ticker.C {
+			if _, err := repository.InsertExpiredAuditLogs(3); err != nil {
+				log.Printf("expiry job failed: %v", err)
+			}
+		}
+	}()
 
 	// 启动HTTP服务器，监听指定端口
 	// Run()函数会阻塞当前goroutine，直到服务器关闭

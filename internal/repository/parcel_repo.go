@@ -101,12 +101,24 @@ func GetParcelByPhone(phone string, limit, offset int) ([]model.ParcelViewStuden
 	parcels := []model.ParcelViewStudent{}
 
 	query := `
-		SELECT tracking_number, courier_name, pickup_code, shelf_zone, status, updated_at
-		FROM v_student_parcels
-		WHERE user_id = (
+		SELECT 
+			p.tracking_number,
+			c.name AS courier_name,
+			CASE 
+				WHEN p.status IN ('stored', 'pending') THEN p.pickup_code
+				ELSE '待上架'
+			END AS pickup_code,
+			s.zone AS shelf_zone,
+			p.status,
+			p.created_at,
+			p.updated_at
+		FROM parcels p
+		JOIN couriers c ON p.courier_id = c.id
+		LEFT JOIN shelves s ON p.shelf_id = s.id
+		WHERE p.user_id = (
 			SELECT id FROM users WHERE phone = $1
 		)
-		ORDER BY updated_at DESC
+		ORDER BY p.updated_at DESC
 		LIMIT $2 OFFSET $3
 	`
 
@@ -122,10 +134,22 @@ func GetParcelByUserID(userID int64, limit, offset int) ([]model.ParcelViewStude
 	parcels := []model.ParcelViewStudent{}
 
 	query := `
-		SELECT tracking_number, courier_name, pickup_code, shelf_zone, status, updated_at
-		FROM v_student_parcels
-		WHERE user_id = $1
-		ORDER BY updated_at DESC
+		SELECT 
+			p.tracking_number,
+			c.name AS courier_name,
+			CASE 
+				WHEN p.status IN ('stored', 'pending') THEN p.pickup_code
+				ELSE '待上架'
+			END AS pickup_code,
+			s.zone AS shelf_zone,
+			p.status,
+			p.created_at,
+			p.updated_at
+		FROM parcels p
+		JOIN couriers c ON p.courier_id = c.id
+		LEFT JOIN shelves s ON p.shelf_id = s.id
+		WHERE p.user_id = $1
+		ORDER BY p.updated_at DESC
 		LIMIT $2 OFFSET $3
 	`
 
@@ -222,6 +246,7 @@ func GetRetentionParcels(days, limit, offset int) ([]model.ParcelViewStudent, er
             p.pickup_code,
             s.zone AS shelf_zone,
             p.status,
+			p.created_at,
             p.updated_at
         FROM parcels p
         LEFT JOIN couriers c ON p.courier_id = c.id

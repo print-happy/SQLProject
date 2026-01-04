@@ -40,6 +40,7 @@ import {
 } from '@fluentui/react-icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const useStyles = makeStyles({
   container: {
@@ -84,6 +85,7 @@ const useStyles = makeStyles({
 export const AdminDashboard = () => {
   const styles = useStyles();
   const navigate = useNavigate();
+  const { t, language, toggleLanguage } = useLanguage();
   
   const [selectedTab, setSelectedTab] = useState('dashboard');
   const [stats, setStats] = useState({ waiting_pickup: 0, full_shelves: 0, today_ops: 0 });
@@ -316,9 +318,14 @@ export const AdminDashboard = () => {
       <header className={styles.header}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Avatar name="Admin" color="colorful" />
-          <Title3>Admin Dashboard</Title3>
+          <Title3>{t('admin.dashboard')}</Title3>
         </div>
-        <Button icon={<SignOutRegular />} onClick={handleLogout}>Logout</Button>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <Button size="small" onClick={toggleLanguage}>
+            {language === 'zh' ? 'EN' : '中文'}
+          </Button>
+          <Button icon={<SignOutRegular />} onClick={handleLogout}>{t('common.logout')}</Button>
+        </div>
       </header>
 
       <main className={styles.content}>

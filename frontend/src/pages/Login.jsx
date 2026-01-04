@@ -17,6 +17,7 @@ import {
 } from '@fluentui/react-components';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const useStyles = makeStyles({
   container: {
@@ -52,6 +53,7 @@ const useStyles = makeStyles({
 export const Login = () => {
   const styles = useStyles();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [selectedTab, setSelectedTab] = useState('student');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -100,11 +102,11 @@ export const Login = () => {
         else if (role === 'courier') navigate('/courier/dashboard');
         else navigate('/'); // Fallback
       } else {
-        setError('Login failed: Invalid response from server');
+        setError(`${t('login.loginFailed')}: Invalid response from server`);
       }
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error || 'Login failed. Please check your credentials.');
+      setError(err.response?.data?.error || t('login.loginFailed'));
     } finally {
       setLoading(false);
     }
@@ -112,12 +114,12 @@ export const Login = () => {
 
   return (
     <div className={styles.container}>
-      <Title1 className={styles.title}>Campus Logistics</Title1>
+      <Title1 className={styles.title}>{t('login.title')}</Title1>
       <Card className={styles.card}>
         <TabList selectedValue={selectedTab} onTabSelect={handleTabSelect}>
-          <Tab value="student">Student</Tab>
-          <Tab value="courier">Courier</Tab>
-          <Tab value="admin">Admin</Tab>
+          <Tab value="student">{t('login.student')}</Tab>
+          <Tab value="courier">{t('login.courier')}</Tab>
+          <Tab value="admin">{t('login.admin')}</Tab>
         </TabList>
 
         <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -145,10 +147,10 @@ export const Login = () => {
 
           {selectedTab === 'student' && (
             <div className={styles.inputContainer}>
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phone">{t('login.phone')}</Label>
               <Input 
                 id="phone" 
-                placeholder="Enter your phone number"
+                placeholder={t('login.enterPhone')}
                 value={phone} 
                 onChange={(e, data) => setPhone(data.value)} 
               />
@@ -177,12 +179,12 @@ export const Login = () => {
             disabled={loading}
             style={{ width: '100%' }}
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Logging in...' : t('login.login')}
           </Button>
         </CardFooter>
 
         <Button appearance="secondary" onClick={() => navigate('/shipping')} style={{ width: '100%' }}>
-          Send a Parcel
+          {t('login.shippingCalculator')}
         </Button>
       </Card>
     </div>

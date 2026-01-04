@@ -38,6 +38,7 @@ import {
 } from '@fluentui/react-icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const useStyles = makeStyles({
   container: {
@@ -88,6 +89,7 @@ const isExpired = (parcel) => {
 export const StudentDashboard = () => {
   const styles = useStyles();
   const navigate = useNavigate();
+  const { t, language, toggleLanguage } = useLanguage();
   const [parcels, setParcels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pickupDialogOpen, setPickupDialogOpen] = useState(false);
@@ -164,13 +166,18 @@ export const StudentDashboard = () => {
       <header className={styles.header}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Avatar name="Student" />
-          <Title3>Student Dashboard</Title3>
+          <Title3>{t('student.dashboard')}</Title3>
         </div>
-        <Button icon={<SignOutRegular />} onClick={handleLogout}>Logout</Button>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <Button size="small" onClick={toggleLanguage}>
+            {language === 'zh' ? 'EN' : '中文'}
+          </Button>
+          <Button icon={<SignOutRegular />} onClick={handleLogout}>{t('common.logout')}</Button>
+        </div>
       </header>
 
       <main className={styles.content}>
-        <Title1>My Parcels</Title1>
+        <Title1>{t('student.parcels')}</Title1>
         
         <Card className={styles.card}>
           <Table arial-label="Parcels table">

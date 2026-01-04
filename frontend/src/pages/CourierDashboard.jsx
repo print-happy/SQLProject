@@ -40,6 +40,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Tesseract from 'tesseract.js';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const useStyles = makeStyles({
   container: {
@@ -81,6 +82,7 @@ const useStyles = makeStyles({
 export const CourierDashboard = () => {
   const styles = useStyles();
   const navigate = useNavigate();
+  const { t, language, toggleLanguage } = useLanguage();
   const toasterId = useId('toaster');
   const { dispatchToast } = useToastController(toasterId);
   
@@ -362,16 +364,21 @@ export const CourierDashboard = () => {
       <header className={styles.header}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Avatar name="Courier" color="brand" />
-          <Title3>Courier Dashboard</Title3>
+          <Title3>{t('courier.dashboard')}</Title3>
         </div>
-        <Button icon={<SignOutRegular />} onClick={handleLogout}>Logout</Button>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <Button size="small" onClick={toggleLanguage}>
+            {language === 'zh' ? 'EN' : '中文'}
+          </Button>
+          <Button icon={<SignOutRegular />} onClick={handleLogout}>{t('common.logout')}</Button>
+        </div>
       </header>
 
       <main className={styles.content}>
         <TabList selectedValue={selectedTab} onTabSelect={(e, data) => setSelectedTab(data.value)}>
-          <Tab value="inbound">Inbound Parcel</Tab>
-          <Tab value="ocr">OCR Upload</Tab>
-          <Tab value="tasks">My Tasks</Tab>
+          <Tab value="inbound">{t('courier.inboundParcel')}</Tab>
+          <Tab value="ocr">{t('courier.ocrUpload')}</Tab>
+          <Tab value="tasks">{t('courier.myTasks')}</Tab>
         </TabList>
 
         {selectedTab === 'inbound' && (

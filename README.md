@@ -14,7 +14,7 @@ Campus Logistics 是一个基于 Go + Gin 的校园快递管理后端，配合 R
 - 前端：React + Vite、Fluent UI v9、React Router
 - 基础设施：Docker Compose、Nginx、Postgres
 
-## 目录结构（节选）
+## 目录结构
 - [cmd/server/main.go](cmd/server/main.go) — 后端入口
 - [internal/](internal) — handler、service、repository、middleware
 - [configs/config.yaml](configs/config.yaml) — 本地默认配置
@@ -33,23 +33,23 @@ Campus Logistics 是一个基于 Go + Gin 的校园快递管理后端，配合 R
   - `ADMIN_USERNAME` / `ADMIN_PASSWORD`：管理员登录凭据（可选，设置后优先于数据库，密码支持 bcrypt）。
 - Docker Compose 会把 `.env` 注入后端容器。
 
-## 快速开始（推荐：Docker Compose）
-### 情况 A：第一次使用（从未 compose 过）
+## 快速开始
+### 情况 A：从未compose过，第一次使用
 ```bash
-# 1) 准备 .env（按需修改 JWT_SECRET / ADMIN_USERNAME / ADMIN_PASSWORD）
+# 1) 准备 .env
 cp .env.example .env
 
-# 2) 准备 HTTPS 证书（如已存在可跳过）
+# 2) 准备 HTTPS 证书
 mkdir -p deployment/certs
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout deployment/certs/server.key \
   -out deployment/certs/server.crt \
   -subj "/C=CN/ST=Beijing/L=Beijing/O=CampusLogistics/OU=IT/CN=localhost"
 
-# 3) 构建并后台启动（首次必须 --build）
+# 3) 构建并后台启动
 sudo docker-compose up -d --build
 
-# 4) 查看状态 / 日志
+# 4) 查看状态或日志
 sudo docker-compose ps
 sudo docker-compose logs -f backend
 ```
@@ -58,29 +58,29 @@ sudo docker-compose logs -f backend
 根据你“关闭”的方式不同，使用不同命令：
 
 ```bash
-# B1) 如果之前执行的是 docker-compose stop（容器还在，只是停了）
+#如果之前执行的是 docker-compose stop
 sudo docker-compose start
 
-# B2) 如果之前执行的是 docker-compose down（容器被移除）
+#如果之前执行的是 docker-compose down
 sudo docker-compose up -d
 
-# 如果你改了代码/依赖/配置，重启时建议加 --build
+#修改代码后
 sudo docker-compose up -d --build
 
-# 查看状态 / 日志
+#查看状态或日志
 sudo docker-compose ps
 sudo docker-compose logs -f
 ```
 
 ### 停止与清理
 ```bash
-# 停止但不删除容器（下次用 start 快速恢复）
+# 停止但不删除容器
 sudo docker-compose stop
 
-# 停止并删除容器（会释放 443 端口；下次用 up -d 重建）
+# 停止并删除容器
 sudo docker-compose down
 
-# 彻底清空（包含数据库数据，慎用）
+# 彻底清空
 sudo docker-compose down -v
 ```
 启动成功后，通过 `https://localhost` 访问前端（自签证书会有浏览器提醒，选择继续访问）。
@@ -88,9 +88,7 @@ sudo docker-compose down -v
 ## 本地开发（不使用 Docker）
 ### 后端
 ```bash
-# 依赖：Go 1.25
-cp configs/config.yaml configs/config.local.yaml   # 如需自定义
-# 可在 .env 设置 JWT_SECRET / ADMIN_USERNAME / ADMIN_PASSWORD
+cp configs/config.yaml configs/config.local.yaml   
 
 go mod tidy
 go run cmd/server/main.go
@@ -111,23 +109,3 @@ npm run dev
   - [insert_test_data.sh](insert_test_data.sh)
   - [query_test_data.sh](query_test_data.sh)
 
-## 认证与角色
-- 管理员登录：
-  - 若设置了 `ADMIN_USERNAME`/`ADMIN_PASSWORD`：使用该凭据（密码可为明文或 bcrypt）。
-  - 否则使用数据库 `admins` 表中的账号。
-- 快递员：使用快递公司代码登录（例 `SF` / `JD` / `EMS`）。
-- 学生：使用手机号登录，未注册会自动创建用户。
-
-## 生产建议
-- 将 `GIN_MODE` 设为 `release`。
-- 提供正式证书（替换 [deployment/certs/](deployment/certs) 中的自签证书）。
-- 使用强随机的 `JWT_SECRET`，并通过环境变量注入。
-- 配置防火墙或云安全组，仅暴露 443。
-
-## 常用命令速查
-- 重建并启动：`sudo docker-compose up -d --build`
-- 查看日志：`sudo docker-compose logs -f backend`
-- 停止服务：`sudo docker-compose down`
-- 清理数据：`sudo docker-compose down -v` (慎用)
-
-如有疑问或需要更多使用说明，可以在 `docs/` 目录内继续补充。
